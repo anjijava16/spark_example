@@ -1,0 +1,29 @@
+# Explore Partitioning of file-based RDDs (accounts)
+accounts=sc.textFile("/loudacre/accounts/part-m-00000")
+print accounts.toDebugString()
+
+accounts=sc.textFile("/loudacre/accounts/part-m-00000",3)
+print accounts.toDebugString()
+
+accounts=sc.textFile("/loudacre/accounts/*")
+print accounts.toDebugString()
+
+# Map account data to (userid,"lastname,firstname") pairs
+accounts = sc.textFile("/loudacre/accounts/*")\
+  .map(lambda s: s.split(',')) \
+  .map(lambda values: (values[0],values[4] + ',' + values[3]))
+
+# Count web server log requests by user id
+userreqs = sc.textFile("/loudacre/weblogs/*6")\
+  .map(lambda line: line.split()) \
+  .map(lambda words: (words[2],1)) \
+  .reduceByKey(lambda v1,v2: v1+v2)
+
+# Join account names with request counts, print out first 10 ("lastname,firstname",count) pairs
+accounthits=accounts.join(userreqs).values()
+  
+print accounthits.toDebugString()
+
+accounthits.saveAsTextFile("/loudacre/userreqs")
+
+   

@@ -1,0 +1,11 @@
+val accounts = sc.textFile("/loudacre/accounts/*")
+val savedir = "/loudacre/accounts_by_state"
+val accountsByState = accounts.keyBy(line => line.split(',')(7)).cache()
+
+val states = accountsByState.keys.distinct.collect
+
+for (state <- states) {
+    val stateAccounts=accountsByState.filter(pair => pair._1 == state)
+    stateAccounts.saveAsTextFile(savedir + "/state=" + state)
+}
+

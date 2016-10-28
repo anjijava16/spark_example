@@ -1,0 +1,40 @@
+// Show tables from Metastore
+sqlContext.tableNames().foreach(println)
+
+// Create a DataFrame from the webpage table
+val webpagedf = sqlContext.table("webpage")
+
+// Show the schema for the webpage table dataframe
+webpagedf.printSchema()
+
+// View the first few records
+webpagedf.show(5)
+
+// Create a new DF by selecting two columns of the first DF
+val assocfilesdf = webpagedf.select($"page_id",$"assoc_files")
+
+// Print the schema of the new DF
+assocfilesdf.printSchema()
+
+// Create an RDD from the DF, and extract the column values from the Row items into a pair 
+val afilesrdd = assocfilesdf.map(row => (row.getAs[Short]("page_id"),row.getAs[String]("assoc_files")))
+
+// Split the list of files names in the second column
+val afilesrdd2 = afilesrdd.flatMapValues(filestring => filestring.split(','))
+
+// Convert the RDD to a RowRDD
+import org.apache.spark.sql.Row
+val afilesrowrdd = afilesrdd2.map(pair => Row(pair._1,pair._2))
+
+// Convert back to a DataFrame
+val afiledf = sqlContext.createDataFrame(afilesrowrdd,assocfilesdf.schema)
+afiledf.printSchema
+
+// Give the new DataFrame a more accurate column name
+val finaldf=afiledf.withColumnRenamed("assoc_files","associated_file")
+
+// Save as table, overwriting any prior data in the table
+finaldf.write.mode("overwrite").saveAsTable("webpage_files")
+
+// Bonus: save in Avro format
+finaldf.write.format("com.databricks.spark.avro").mode("overwrite").save("/loudacre/webpage_files_avro")

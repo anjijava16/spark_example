@@ -1,0 +1,8 @@
+# Parse a set of JSON files into an RDD of Map elements
+import json
+mydir = "file:/home/training/training_materials/dev1/examples/spark/jsondata"
+myrdd1 = sc.wholeTextFiles(mydir)
+myrdd2=myrdd1.map(lambda (fname,s): json.loads(s))
+
+for record in myrdd2.take(2):
+    print record["firstName"]

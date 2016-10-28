@@ -1,0 +1,19 @@
+# Multi-RDD transformation examples
+rdd1=sc.parallelize(Array("Chicago", "Boston", "Paris", "San Francisco", "Tokyo"))
+rdd2=sc.parallelize(Array("San Francisco", "Boston", "Amsterdam", "Mumbai", "McMurdo Station"))
+rdd1.collect()
+rdd2.collect()
+rdd1.union(rdd2).collect()
+rdd1.subtract(rdd2).collect()
+rdd1.zip(rdd2).collect()
+
+# flatmap and distinct example
+file="file:/home/training/training_materials/dev1/data/purplecow.txt"
+mydata_distinct= \
+   sc.textFile(file). \
+   flatMap(line => line.split(' ')).  \
+   distinct()
+mydata_distinct.collect
+
+
+

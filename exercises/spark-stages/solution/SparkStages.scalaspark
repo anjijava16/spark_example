@@ -1,0 +1,30 @@
+// Explore Partitioning of file=based RDDs
+
+var accounts=sc.textFile("/loudacre/accounts/part-m-00000")
+accounts.toDebugString
+
+accounts=sc.textFile("/loudacre/accounts/part-m-00000",3)
+accounts.toDebugString
+
+accounts=sc.textFile("/loudacre/accounts/*")
+accounts.toDebugString
+
+// Map account data to (userid,"lastname,firstname") pairs
+val accounts = sc.textFile("/loudacre/accounts/*").
+  map(line => line.split(',')).
+  map(values => (values(0),values(4) + ',' + values(3)))
+
+// Count web server log requests by user id
+val userreqs = sc.textFile("/loudacre/weblogs/*6").
+   map(line => line.split(' ')).
+   map(words => (words(2),1)).  
+   reduceByKey((v1,v2) => v1 + v2)
+   
+// Join account names with request counts, print out first 10 ("lastname,firstname",count) pairs
+val accounthits = accounts.join(userreqs).values
+
+accounthits.toDebugString
+
+accounthits.saveAsTextFile("userreqs")
+
+   

@@ -1,0 +1,37 @@
+# Show tables from Metastore
+for table in sqlContext.tableNames(): print table
+
+# Create a DataFrame based on the webpage table
+webpagedf = sqlContext.table("webpage")
+
+# Show the schema for the webpage table dataframe
+webpagedf.printSchema()
+
+# View the first few records
+webpagedf.show(5)
+
+# Create a new DF by selecting two columns of the first DF
+assocfilesdf = webpagedf.select(webpagedf.page_id,webpagedf.assoc_files)
+
+# Print the schema of the new DF
+assocfilesdf.printSchema()
+
+# Convert to an RDD and extract the values from the Row items
+afilesrdd = assocfilesdf.map(lambda row: (row.page_id,row.assoc_files))
+
+# Split the list of files names in the second column
+afilesrdd2 = afilesrdd.flatMapValues(lambda filestring: filestring.split(','))
+
+# Convert back to a DataFrame
+afiledf = sqlContext.createDataFrame(afilesrdd2,assocfilesdf.schema)
+afiledf.printSchema()
+
+# Give the new DataFrame a more accurate column name
+finaldf=afiledf.withColumnRenamed('assoc_files','associated_file')
+
+# Save as table, overwriting any prior data in the table
+finaldf.write.mode("overwrite").saveAsTable("webpage_files")
+
+
+# Bonus: save in Avro format
+finaldf.write.format("com.databricks.spark.avro").mode("overwrite").save("/loudacre/webpage_files_avro")

@@ -1,0 +1,33 @@
+// Count web server log requests by user id
+val userreqs = sc.textFile("/loudacre/weblogs/*6").
+   map(line => line.split(' ')).
+   map(words => (words(2),1)).  
+   reduceByKey((v1,v2) => v1 + v2)
+   
+// Map account data to (userid,"lastname,firstname") pairs
+val accounts = sc.textFile("/loudacre/accounts/*").
+  map(line => line.split(',')).
+  map(values => (values(0),values(4) + ',' + values(3)))
+
+// Join account names with request counts, print out first 10 ("lastname,firstname",count) pairs
+val accounthits = accounts.join(userreqs).map(pair => pair._2)
+
+accounthits.toDebugString
+
+// How many accounts had hitcount > 5?
+accounthits.filter(pair => pair._2 > 5).count()  
+
+// Persist 
+accounthits.persist()
+
+// rerun job several times and review the results
+accounthits.filter(pair => pair._2 > 5).count()  
+ 
+accounthits.toDebugString
+  
+accounthits.filter(pair => pair._2 > 5).count()  
+  
+// Bonus solution
+import org.apache.spark.storage.StorageLevel
+accounthits.unpersist()
+accounthits.persist(StorageLevel.DISK_ONLY)

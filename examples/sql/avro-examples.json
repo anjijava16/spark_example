@@ -1,0 +1,79 @@
+
+{"namespace":"com.loudacre.data",
+ "type":"record",
+ "name":"Employee",
+ "fields":[
+     {"name":"id", "type":"int"},
+     {"name":"name", "type":"string"},
+     {"name":"title", "type":"string"},
+     {"name":"bonus", "type":"int"}]
+}
+
+
+{"namespace":"com.loudacre.data",
+ "type":"record",
+ "name":"Invoice",
+ "fields":[
+    {"name":"id", "type":"int"},
+    {"name":"taxcode", "type":"int", "default":"39"},
+    {"name":"lang", "type":"string", "default":"EN_US"}]
+}
+
+
+{"namespace":"com.loudacre.data",
+ "type":"record",
+ "name":"Employee",
+ "fields":[
+    {"name":"id", "type":"int"},
+    {"name":"name", "type":"string"},
+    {"name":"title", "type":["null","string"]},
+    {"name":"bonus", "type":["null","int"]}]
+}
+
+{"namespace":"com.loudacre.data",
+ "type":"record",
+ "name":"CustomerServiceTicket",
+ "fields":[
+    {"name":"id", "type":"int"},
+    {"name":"agent", "type":"string"},
+    {"name":"category", "type":{
+          "name":"CSCategory", "type":"enum",
+          "symbols":["Order","Shipping","Device"]}
+    },
+    {"name":"tags", "type":{
+          "type":"array", "items":"string"}
+    }]
+}
+
+{"namespace":"com.loudacre.data",
+ "type":"record",
+ "name":"WebProduct",
+ "doc":"Item currently sold in Loudacre's online store",
+ "fields":[
+    {"name":"id", "type":"int", "doc":"Product SKU"},
+    {"name":"shipwt", "type":"int",           "doc": "Shipping weight, in pounds"},
+    {"name":"price", "type":"int",           "doc":"Retail price, in cents (US)"}]
+}
+
+{"namespace": "com.loudacre.data",
+ "type": "record",
+ "name": "CustomerContact",
+ "fields": [
+     {"name": "id", "type": "int"},
+     {"name": "name", "type": "string"},
+     {"name": "faxNumber", "type": "string"}
+]}
+
+{"namespace": "com.loudacre.data",
+ "type": "record",
+ "name": "CustomerContact",
+ "fields": [
+    {"name":"customerId", "type":"long", 
+         "aliases":["id"]},
+    {"name":"name", "type":"string"},
+    {"name":"prefLang", "type":"string",
+         "default":"en_US"},
+    {"name":"email", 
+         "type":["null","string"],"default":null}
+]}
+

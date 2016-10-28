@@ -1,0 +1,43 @@
+val regionfile="/home/training/training_materials/data/status-regions.txt"
+val regions = scala.io.Source.fromFile(regionfile).getLines.map(_.split(",")).map(strings => (strings(0),(strings(1).toDouble,strings(2).toDouble))).toMap
+
+import scala.math.pow
+
+// The squared distances between two points
+def distanceSquared(p1: (Double,Double), p2: (Double,Double)) = { 
+  pow(p1._1 - p2._1,2) + pow(p1._2 - p2._2,2 )
+}
+
+// given a dictionary of region IDs and their locations, and a line the devstatus file, return the region ID
+// of the region closest to the given point
+
+def findRegion(s: String, regions: Map[String,(Double,Double)]): String = {
+    val fields=s.split(",")
+    val p=(fields(3).toDouble,fields(4).toDouble)
+    var closest = Double.PositiveInfinity
+    var closestRegion: String = ""
+
+    regions.foreach(pair => {
+      val dist = distanceSquared(pair._2,p)
+      if (dist < closest) {
+        closest = dist
+        closestRegion = pair._1
+      }
+    })
+    closestRegion
+}
+    
+// SOLUTION HERE
+// The device status data file(s)
+val devstatus = sc.textFile("/loudacre/devicestatus_etl/*")
+
+// Key each line by closest region
+val devstatusByRegion = devstatus.keyBy(line => findRegion(line,regions))
+
+// For each region in map, save to partitioned directory    
+regions.foreach{case(region,point) => 
+    println("Saving data for region: "+region)
+    devstatusByRegion.filter{case(k,v) => region == k}.
+       values.
+       saveAsTextFile("/loudacre/devstatusByRegion/region="+region)
+}

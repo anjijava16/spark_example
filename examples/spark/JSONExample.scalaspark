@@ -1,0 +1,7 @@
+// Parse a set of JSON files into an RDD of Map elements
+import scala.util.parsing.json.JSON
+val mydir = "file:/home/training/training_materials/dev1/examples/spark/jsondata"
+val myrdd1 = sc.wholeTextFiles(mydir)
+val myrdd2=myrdd1.map(pair => JSON.parseFull(pair._2).get.asInstanceOf[Map[String,String]])
+for (record <- myrdd2.take(2))
+    println(record.getOrElse("firstName",null))

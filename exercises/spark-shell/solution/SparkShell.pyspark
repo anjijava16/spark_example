@@ -1,0 +1,41 @@
+# Create an RDD based on a data file
+mydata = sc.textFile("file:/home/training/training_materials/data/frostroad.txt")
+
+# Count the number of lines in the RDD
+mydata.count()
+
+# Display all the lines in the RDD
+mydata.collect()
+
+# Create an RDD based on the web log data files
+logfile="/loudacre/weblogs/FlumeData.*"
+logs = sc.textFile(logfile)
+
+# Count the number of records (lines) in the RDD
+logs.count()
+
+# Display all lines which are requests for JPG files
+jpglogs=logs.filter(lambda x: ".jpg" in x)
+jpglogs.collect()
+
+# Display the JPG requests, this time using a single command line
+sc.textFile(logfile).filter(lambda x: ".jpg" in x).count()
+
+# Create an RDD of the length of each line in the file
+lengths = logs.map(lambda s: len(s))
+# Display the first 5 line lengths
+lengths.take(5)
+
+# Map the log data to an RDD of arrays of the words on each line
+logs.map(lambda s: s.split()).take(5)
+
+# Map the log data to an RDD of IP addresses for each line 
+ips = logs.map(lambda line: line.split()[0])
+
+# Save the IP addresses to text file(s)
+ips.saveAsTextFile("/loudacre/iplist")
+
+# Bonus Exercise - Display "ip-address/user-id" for the first 5 HTML requests 
+# in the data set 
+htmllogs=logs.filter(lambda s: ".htm" in s).map(lambda s: (s.split()[0],s.split()[2]))
+for x in htmllogs.take(5): print x[0]+"/"+x[1]

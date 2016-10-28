@@ -1,0 +1,36 @@
+regionfile="/home/training/training_materials/data/status-regions.txt"
+r1 = map(lambda x: x.strip().split(','),open(regionfile,'r'))
+regions = dict(map(lambda (region,lat,lon): [region,(float(lat),float(lon))],r1))
+    
+def distanceSquared(p1,p2):  
+    return (p1[0] - p2[0]) ** 2 + (p1[1] - p2[1]) ** 2
+
+# given a dictionary of region IDs and their locations, and a line the devstatus file, return the region ID
+# of the region closest to the given point
+def findRegion(s, regions):
+    # parse the input string to find the point
+    fields=s.split(',')
+    p=(float(fields[3]),float(fields[4]))
+    # starting distance is infinity
+    closest = float("+inf")
+    # for each region in the dict, calculate the distance to the test point, then return
+    # the key of the point with the smallest distance
+    for (region,location) in regions.items(): 
+        dist = distanceSquared(p,location)
+        if dist < closest:
+            closest = dist
+            closestRegion = region
+    return closestRegion
+    
+    
+# SOLUTION HERE
+# The device status data file(s)
+devstatus = sc.textFile("/loudacre/devicestatus_etl/*")
+
+devstatusByRegion = devstatus.keyBy(lambda line: findRegion(line,regions))
+    
+for region in regions.iterkeys(): 
+    print "Saving data for region: ",region
+    devstatusByRegion.filter(lambda (k,v): region == k).\
+       values().\
+       saveAsTextFile("/loudacre/devstatusByRegion/region="+region)
